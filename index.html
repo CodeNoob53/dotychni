@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Математична дошка - Варіант 1</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&family=Noto+Serif:wght@400;700&family=Lora:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --chalkboard-color: #27382C;
+            --chalk-white: #E2DED0;
+            --chalk-yellow: #F3E5AB;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Lora', serif;
+            color: var(--chalk-white);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #4B5043;
+            background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23404637' fill-opacity='0.4' fill-rule='evenodd'%3E%3Cpath d='M0 0h40v40H0V0zm20 20h20v20H20V20zm0-20h20v20H20V0z'/%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        .main-title {
+            color: var(--chalk-yellow);
+            font-family: 'Noto Serif', serif;
+            font-size: 2.5em;
+            text-align: center;
+            margin: 20px 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .main-title::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: -5px;
+            width: 100%;
+            height: 2px;
+            background: var(--chalk-yellow);
+            opacity: 0.7;
+            border-radius: 2px;
+        }
+
+        .board-frame {
+            width: 90%;
+            max-width: 1200px;
+            height: 700px;
+            background-color: #6e4c1e;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+            position: relative;
+            overflow: hidden;
+            background-image: linear-gradient(90deg, rgba(83, 58, 22, 0.5) 0%, rgba(110, 76, 30, 0.5) 25%, rgba(83, 58, 22, 0.5) 50%, rgba(110, 76, 30, 0.5) 75%, rgba(83, 58, 22, 0.5) 100%);
+        }
+
+        .chalkboard {
+            width: 100%;
+            height: 100%;
+            background-color: var(--chalkboard-color);
+            border-radius: 3px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: inset 0px 2px 13px -3px rgba(0,0,0,1);
+            z-index: 10;
+        }
+
+        .chalkboard::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Crect x='0' y='0' width='30' height='30' fill='none' stroke='%2334493A' stroke-width='0.5'/%3E%3C/svg%3E");
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .chalkboard::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250' viewBox='0 0 250 250'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.5'/%3E%3C/svg%3E");
+            opacity: 0.3;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .section-header {
+            position: sticky;
+            top: 0;
+            background-color: var(--chalkboard-color);
+            padding: 10px 20px;
+            z-index: 3;
+            border-bottom: 1px solid rgba(243, 229, 171, 0.3);
+        }
+
+        .section-header h2 {
+            color: var(--chalk-yellow);
+            font-family: 'Noto Serif', serif;
+            font-size: 1.8em;
+            margin: 0;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .scrollable-content {
+            flex: 1;
+            overflow-y: scroll;
+            padding: 20px;
+            box-sizing: border-box;
+            scroll-snap-type: y mandatory;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.3) rgba(0, 0, 0, 0.1);
+            z-index: 2;
+            scroll-behavior: smooth;
+        }
+
+        .scrollable-content::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .scrollable-content::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+        }
+
+        .scrollable-content::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+        }
+
+        .problem-section {
+            display: flex;
+            flex-direction: column;
+            scroll-snap-align: start;
+            padding-bottom: 20px;
+            position: relative;
+            margin-bottom: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease; /* Видалено transform, зменшено тривалість */
+            box-sizing: border-box;
+        }
+
+        .problem-section.visible {
+            opacity: 1;
+        }
+
+        .problem-section.animated {
+            transition: none; /* Вимикаємо повторну анімацію */
+        }
+
+        .problem-content {
+            flex: none;
+        }
+
+        .problem-subtitle {
+            color: var(--chalk-white);
+            font-family: 'Noto Sans', sans-serif;
+            font-size: 1.4em;
+            margin-top: 0;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        p {
+            font-size: 1.2em;
+            line-height: 1.6;
+            margin: 8px 0;
+            font-family: 'Noto Sans', sans-serif;
+            position: relative;
+        }
+
+        .MathJax {
+            color: var(--chalk-white) !important;
+            font-size: 115% !important;
+        }
+
+        .chalk-effect {
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        .chalk-line {
+            height: 2px;
+            background: repeating-linear-gradient(
+                90deg,
+                var(--chalk-white),
+                var(--chalk-white) 10px,
+                transparent 10px,
+                transparent 15px
+            );
+            opacity: 0.5;
+            margin: 15px 0;
+        }
+
+        .scroll-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+            transition: background-color 0.3s;
+        }
+
+        .scroll-indicator:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .scroll-indicator::after {
+            content: "↓";
+            color: var(--chalk-white);
+            font-size: 24px;
+        }
+
+        .scroll-indicator.up::after {
+            content: "↑";
+        }
+
+        .result {
+            font-weight: bold;
+            color: var(--chalk-yellow);
+            margin-top: auto;
+            padding: 5px 10px;
+            display: inline-block;
+            position: relative;
+        }
+
+        .result::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 1px dashed rgba(243, 229, 171, 0.5);
+            border-radius: 5px;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="main-title chalk-effect">Індивідуальне завдання: Варіант 1</h1>
+    <div class="board-frame">
+        <div class="chalkboard">
+            <div class="section-header">
+                <h2 class="chalk-effect"></h2>
+            </div>
+            <div class="scrollable-content">
+                <div class="problem-section" id="section-1-1" data-title="1. Границі раціональних функцій">
+                    <div class="problem-content">
+                        <h3 class="problem-subtitle chalk-effect">1.1. \(\lim_{x \to 2} \frac{x^2 - 4}{x^2 - 4x + 4}\)</h3>
+                        <p class="chalk-effect">Розв'язання:</p>
+                        <p class="chalk-effect">Крок 1: Підставка \(x = 2\) дає \(\frac{4 - 4}{4 - 8 + 4} = \frac{0}{0}\).</p>
+                        <p class="chalk-effect">Крок 2: Факторизація: \(x^2 - 4 = (x - 2)(x + 2)\), \(x^2 - 4x + 4 = (x - 2)^2\).</p>
+                        <p class="chalk-effect">Крок 3: Спрощення: \(\frac{(x - 2)(x + 2)}{(x - 2)^2} = \frac{x + 2}{x - 2}\).</p>
+                        <p class="chalk-effect">Крок 4: Аналіз: При \(x \to 2^+\), \(\frac{x + 2}{x - 2} \to +\infty\); при \(x \to 2^-\), \(\to -\infty\).</p>
+                        <div class="chalk-line"></div>
+                    </div>
+                    <p class="result chalk-effect">Результат: Границя не існує.</p>
+                </div>
+                
+                <div class="problem-section" id="section-1-2" data-title="1. Границі раціональних функцій">
+                    <div class="problem-content">
+                        <h3 class="problem-subtitle chalk-effect">1.2. \(\lim_{x \to -1} \frac{3x^2 + 5x + 2}{x^2 - 1}\)</h3>
+                        <p class="chalk-effect">Розв'язання:</p>
+                        <p class="chalk-effect">Крок 1: Підставка \(x = -1\) дає \(\frac{3 - 5 + 2}{1 - 1} = \frac{0}{0}\).</p>
+                        <p class="chalk-effect">Крок 2: Факторизація: \(3x^2 + 5x + 2 = (3x + 2)(x + 1)\), \(x^2 - 1 = (x - 1)(x + 1)\).</p>
+                        <p class="chalk-effect">Крок 3: Спрощення: \(\frac{3x + 2}{x - 1}\).</p>
+                        <p class="chalk-effect">Крок 4: Підставка: \(\frac{3(-1) + 2}{-1 - 1} = \frac{-1}{-2} = \frac{1}{2}\).</p>
+                        <div class="chalk-line"></div>
+                    </div>
+                    <p class="result chalk-effect">Результат: \(\frac{1}{2}\).</p>
+                </div>
+                
+                <div class="problem-section" id="section-1-3" data-title="1. Границі раціональних функцій">
+                    <div class="problem-content">
+                        <h3 class="problem-subtitle chalk-effect">1.3. \(\lim_{x \to 3} \frac{x^2 - x - 6}{x^2 - 6x + 9}\)</h3>
+                        <p class="chalk-effect">Розв'язання:</p>
+                        <p class="chalk-effect">Крок 1: Підставка \(x = 3\) дає \(\frac{9 - 3 - 6}{9 - 18 + 9} = \frac{0}{0}\).</p>
+                        <p class="chalk-effect">Крок 2: Факторизація: \(x^2 - x - 6 = (x - 3)(x + 2)\), \(x^2 - 6x + 9 = (x - 3)^2\).</p>
+                        <p class="chalk-effect">Крок 3: Спрощення: \(\frac{x + 2}{x - 3}\).</p>
+                        <p class="chalk-effect">Крок 4: Аналіз: При \(x \to 3^+\), \(\to +\infty\); при \(x \to 3^-\), \(\to -\infty\).</p>
+                        <div class="chalk-line"></div>
+                    </div>
+                    <p class="result chalk-effect">Результат: Границя не існує.</p>
+                </div>
+                
+                <div class="problem-section" id="section-1-4" data-title="1. Границі раціональних функцій">
+                    <div class="problem-content">
+                        <h3 class="problem-subtitle chalk-effect">1.4. \(\lim_{x \to 4} \frac{x^2 - 4x}{x^2 - 5x + 4}\)</h3>
+                        <p class="chalk-effect">Розв'язання:</p>
+                        <p class="chalk-effect">Крок 1: Підставка \(x = 4\) дає \(\frac{16 - 16}{16 - 20 + 4} = \frac{0}{0}\).</p>
+                        <p class="chalk-effect">Крок 2: Факторизація: \(x^2 - 4x = x(x - 4)\), \(x^2 - 5x + 4 = (x - 4)(x - 1)\).</p>
+                        <p class="chalk-effect">Крок 3: Спрощення: \(\frac{x}{x - 1}\).</p>
+                        <p class="chalk-effect">Крок 4: Підставка: \(\frac{4}{4 - 1} = \frac{4}{3}\).</p>
+                        <div class="chalk-line"></div>
+                    </div>
+                    <p class="result chalk-effect">Результат: \(\frac{4}{3}\).</p>
+                </div>
+                
+                <div class="problem-section" id="section-1-5" data-title="1. Границі раціональних функцій">
+                    <div class="problem-content">
+                        <h3 class="problem-subtitle chalk-effect">1.5. \(\lim_{x \to -1} \frac{x^2 + 7x + 6}{x^2 - x - 2}\)</h3>
+                        <p class="chalk-effect">Розв'язання:</p>
+                        <p class="chalk-effect">Крок 1: Підставка \(x = -1\) дає \(\frac{1 - 7 + 6}{1 + 1 - 2} = \frac{0}{0}\).</p>
+                        <p class="chalk-effect">Крок 2: Факторизація: \(x^2 + 7x + 6 = (x + 1)(x + 6)\), \(x^2 - x - 2 = (x - 2)(x + 1)\).</p>
+                        <p class="chalk-effect">Крок 3: Спрощення: \(\frac{x + 6}{x - 2}\).</p>
+                        <p class="chalk-effect">Крок 4: Підставка: \(\frac{-1 + 6}{-1 - 2} = \frac{5}{-3} = -\frac{5}{3}\).</p>
+                        <div class="chalk-line"></div>
+                    </div>
+                    <p class="result chalk-effect">Результат: \(-\frac{5}{3}\).</p>
+                </div>
+                
+                <div class="problem-section" id="section-1-6" data-title="1. Границі раціональних функцій">
+                    <div class="problem-content">
+                        <h3 class="problem-subtitle chalk-effect">1.6. \(\displaystyle\lim_{x \to \infty} \frac{x^3 + 15x + 2}{3x^3 - x^2 + x}\)</h3>
+                        <p class="chalk-effect">Розв'язання:</p>
+                        <p class="chalk-effect">Крок 1: Виділимо найвищий степінь \(x^3\) в чисельнику й знаменнику:</p>
+                        <p class="chalk-effect">  
+                        \[
+                        \frac{x^3 + 15x + 2}{3x^3 - x^2 + x}
+                        = \frac{x^3\bigl(1 + 15/x^2 + 2/x^3\bigr)}
+                               {x^3\bigl(3 - 1/x + 1/x^2\bigr)}
+                        = \frac{1 + O(1/x^2)}{3 + O(1/x)}.
+                        \]
+                        </p>
+                        <p class="chalk-effect">Крок 2: При \(x\to\infty\) члени \(O(1/x)\to0\), тому  
+                        \(\displaystyle\frac{1}{3}.\)</p>
+                        <div class="chalk-line"></div>
+                    </div>
+                    <p class="result chalk-effect">Результат: \(\displaystyle\frac{1}{3}\).</p>
+                </div>
+                
+                <div class="problem-section" id="section-1-7" data-title="1. Границі раціональних функцій">
+                    <div class="problem-content">
+                        <h3 class="problem-subtitle chalk-effect">1.7. \(\displaystyle\lim_{x \to \infty} \frac{12x^2 + 5x - 3}{6x^2 - x - 4}\)</h3>
+                        <p class="chalk-effect">Розв'язання:</p>
+                        <p class="chalk-effect">  
+                        \[
+                        \frac{12x^2 + 5x - 3}{6x^2 - x - 4}
+                        = \frac{x^2\bigl(12 + 5/x - 3/x^2\bigr)}
+                               {x^2\bigl(6 - 1/x - 4/x^2\bigr)}
+                        \;\xrightarrow[x\to\infty]{}\;
+                        \frac{12}{6} = 2.
+                        \]
+                        </p>
+                        <div class="chalk-line"></div>
+                    </div>
+                    <p class="result chalk-effect">Результат: \(2\).</p>
+                </div>
+                
+                <div class="problem-section" id="section-1-8" data-title="1. Границі раціональних функцій">
+                    <div class="problem-content">
+                        <h3 class="problem-subtitle chalk-effect">1.8. \(\displaystyle\lim_{x \to \infty} \frac{2x^3 - 3x^2 + 2}{x^3 - 14x^2 + 13x}\)</h3>
+                        <p class="chalk-effect">Розв'язання:</p>
+                        <p class="chalk-effect">  
+                        \[
+                        \frac{2x^3 - 3x^2 + 2}{x^3 - 14x^2 + 13x}
+                        = \frac{x^3\bigl(2 - 3/x + 2/x^3\bigr)}
+                               {x^3\bigl(1 - 14/x + 13/x^2\bigr)}
+                        \;\xrightarrow[x\to\infty]{}\;
+                        \frac{2}{1} = 2.
+                        \]
+                        </p>
+                        <div class="chalk-line"></div>
+                    </div>
+                    <p class="result chalk-effect">Результат: \(2\).</p>
+                </div>
+                
+                <div class="problem-section" id="section-1-9" data-title="1. Границі раціональних функцій">
+                    <div class="problem-content">
+                        <h3 class="problem-subtitle chalk-effect">1.9. \(\displaystyle\lim_{x \to \infty} \frac{2x^2 + 5x - 3}{5x^2 - 6x + 4}\)</h3>
+                        <p class="chalk-effect">Розв'язання:</p>
+                        <p class="chalk-effect">  
+                        \[
+                        \frac{2x^2 + 5x - 3}{5x^2 - 6x + 4}
+                        = \frac{x^2\bigl(2 + 5/x - 3/x^2\bigr)}
+                               {x^2\bigl(5 - 6/x + 4/x^2\bigr)}
+                        \;\xrightarrow[x\to\infty]{}\;
+                        \frac{2}{5}.
+                        \]
+                        </p>
+                        <div class="chalk-line"></div>
+                    </div>
+                    <p class="result chalk-effect">Результат: \(\frac{2}{5}\).</p>
+                </div>
+                
+                <div class="problem-section" id="section-1-10" data-title="1. Границі раціональних функцій">
+                    <div class="problem-content">
+                        <h3 class="problem-subtitle chalk-effect">1.10. \(\displaystyle\lim_{x \to \infty} \frac{4x^2 + x - 3}{x^2 - 6x + 9}\)</h3>
+                        <p class="chalk-effect">Розв'язання:</p>
+                        <p class="chalk-effect">  
+                        \[
+                        \frac{4x^2 + x - 3}{x^2 - 6x + 9}
+                        = \frac{x^2\bigl(4 + 1/x - 3/x^2\bigr)}
+                               {x^2\bigl(1 - 6/x + 9/x^2\bigr)}
+                        \;\xrightarrow[x\to\infty]{}\;
+                        \frac{4}{1} = 4.
+                        \]
+                        </p>
+                        <div class="chalk-line"></div>
+                    </div>
+                    <p class="result chalk-effect">Результат: \(4\).</p>
+                </div>
+                
+                <div class="problem-section" id="section-2-1" data-title="2. Ірраціональні границі">
+                    <div class="problem-content">
+                        <h3 class="problem-subtitle chalk-effect">2.1. \(\displaystyle\lim_{x \to 0} \frac{\sqrt{x^2 + 4} - 2}{x^3 - x^2}\)</h3>
+                        <p class="chalk-effect">Розв'язання:</p>
+                        <p class="chalk-effect">Крок 1: Виділимо спільний множник у знаменнику:  
+                        \(\frac{\sqrt{x^2+4}-2}{x^2(x-1)}\).</p>
+                        <p class="chalk-effect">Крок 2: Раціоналізуємо чисельник:  
+                        \[
+                        \frac{\sqrt{x^2+4}-2}{x^2(x-1)}
+                        \cdot\frac{\sqrt{x^2+4}+2}{\sqrt{x^2+4}+2}
+                        =\frac{x^2}{x^2(x-1)\,(\sqrt{x^2+4}+2)}.
+                        \]</p>
+                        <p class="chalk-effect">Крок 3: Скорочуємо \(x^2\):  
+                        \(\displaystyle\frac{1}{(x-1)\,(\sqrt{x^2+4}+2)}\).</p>
+                        <p class="chalk-effect">Крок 4: Підставка \(x\to0\):  
+                        \((x-1)\to -1,\;\sqrt{0+4}+2=4\) →  
+                        \(\displaystyle -\frac{1}{4}\).</p>
+                        <div class="chalk-line"></div>
+                    </div>
+                    <p class="result chalk-effect">Результат: \(-\frac{1}{4}\).</p>
+                </div>
+                
+                <div class="problem-section" id="section-2-2" data-title="2. Ірраціональні границі">
+                    <div class="problem-content">
+                        <h3 class="problem-subtitle chalk-effect">2.2. \(\lim_{x \to 0} \frac{\sqrt{x^2 + 16} - 4}{x^3 + x^2}\)</h3>
+                        <p class="chalk-effect">Розв'язання:</p>
+                        <p class="chalk-effect">Крок 1: Підставка дає невизначеність:  
+                        \(\frac{\sqrt{0 + 16} - 4}{0 + 0} = \frac{0}{0}\).</p>
+                        <p class="chalk-effect">Крок 2: Раціоналізація чисельника:  
+                        \[
+                        \frac{\sqrt{x^2 + 16} - 4}{x^3 + x^2} \cdot \frac{\sqrt{x^2 + 16} + 4}{\sqrt{x^2 + 16} + 4}
+                        = \frac{x^2}{(x^3 + x^2)(\sqrt{x^2 + 16} + 4)}.
+                        \]</p>
+                        <p class="chalk-effect">Крок 3: Виділяємо спільний множник у знаменнику:  
+                        \(x^3 + x^2 = x^2(x + 1)\), тому  
+                        \[
+                        \frac{x^2}{x^2(x + 1)(\sqrt{x^2 + 16} + 4)} = \frac{1}{(x + 1)(\sqrt{x^2 + 16} + 4)}.
+                        \]</p>
+                        <p class="chalk-effect">Крок 4: При \(x \to 0\):  
+                        \((x + 1) \to 1\), \(\sqrt{x^2 + 16} + 4 \to 4 + 4 = 8\), отже  
+                        \(\frac{1}{8}\).</p>
+                        <div class="chalk-line"></div>
+                    </div>
+                    <p class="result chalk-effect">Результат: \(\frac{1}{8}\).</p>
+                </div>
+                
+                <div class="problem-section" id="section-2-3" data-title="2. Ірраціональні границі">
+                    <div class="problem-content">
+                        <h3 class="problem-subtitle chalk-effect">2.3. \(\displaystyle\lim_{x \to +\infty} \bigl(\sqrt{9x^2 + x} - 3x\bigr)\)</h3>
+                        <p class="chalk-effect">Розв'язання:</p>
+                        <p class="chalk-effect">Крок 1: Винесемо \(x\) під корінь:  
+                        \(\sqrt{9x^2+x} = x\sqrt{9 + 1/x}.\)</p>
+                        <p class="chalk-effect">Крок 2: Використаємо розклад для малих \(1/x\):  
+                        \(\sqrt{9 + \frac1{x}} = 3\sqrt{1 + \frac{1}{9x}}
+                        \approx 3\Bigl(1 + \frac1{2\cdot9x}\Bigr)
+                        = 3 + \frac{1}{6x}.\)</p>
+                        <p class="chalk-effect">Крок 3:  
+                        \[
+                        x\sqrt{9+\frac1{x}} - 3x
+                        \approx x\Bigl(3 + \frac{1}{6x}\Bigr) - 3x
+                        = \frac{1}{6}.
+                        \]
+                        </p>
+                        <div class="chalk-line"></div>
+                    </div>
+                    <p class="result chalk-effect">Результат: \(\frac{1}{6}\).</p>
+                </div>
+                
+                <div class="problem-section" id="section-3-1" data-title="3. Границя за теоремою Безу">
+                    <div class="problem-content">
+                        <h3 class="problem-subtitle chalk-effect">3.1. \(\lim_{x \to 1} \frac{x^3 + x^2 + x - 3}{9x^2 - 8x - 1}\)</h3>
+                        <p class="chalk-effect">Розв'язання:</p>
+                        <p class="chalk-effect">Крок 1: Підставка: \(\frac{1 + 1 + 1 - 3}{9 - 8 - 1} = \frac{0}{0}\).</p>
+                        <p class="chalk-effect">Крок 2: Факторизація: \(x^3 + x^2 + x - 3 = (x - 1)(x^2 + 2x + 3)\), \(9x^2 - 8x - 1 = (x - 1)(9x + 1)\).</p>
+                        <p class="chalk-effect">Крок 3: Спрощення: \(\frac{x^2 + 2x + 3}{9x + 1}\).</p>
+                        <p class="chalk-effect">Крок 4: Підставка: \(\frac{1 + 2 + 3}{9 + 1} = \frac{6}{10} = \frac{3}{5}\).</p>
+                        <div class="chalk-line"></div>
+                    </div>
+                    <p class="result chalk-effect">Результат: \(\frac{3}{5}\).</p>
+                </div>
+                
+                <div class="problem-section" id="section-4-1" data-title="4. Границя за правилом Лопіталя">
+                    <div class="problem-content">
+                        <h3 class="problem-subtitle chalk-effect">4.1. \(\displaystyle\lim_{x \to 0^+} \frac{\ln\sin x}{\ln\sin 5x}\)</h3>
+                        <p class="chalk-effect">Розв'язання:</p>
+                        <p class="chalk-effect">Крок 1: При \(x \to 0^+\), маємо невизначеність \(\frac{-\infty}{-\infty}\). Застосовуємо правило Лопіталя: \(\frac{d}{dx} (\ln \sin x) = \cot x\), \(\frac{d}{dx} (\ln \sin 5x) = 5 \cot 5x\). Отже, ліміт стає:
+                        \[
+                        \lim_{x \to 0^+} \frac{\cot x}{5 \cot 5x} = \lim_{x \to 0^+} \frac{\cos x \sin 5x}{5 \sin x \cos 5x}.
+                        \]</p>
+                        <p class="chalk-effect">Крок 2: Це знову \(\frac{0}{0}\), тому застосовуємо правило Лопіталя ще раз: \(\frac{d}{dx} (\cot x) = -\csc^2 x\), \(\frac{d}{dx} (5 \cot 5x) = -25 \csc^2 5x\). Ліміт:
+                        \[
+                        \lim_{x \to 0^+} \frac{\csc^2 x}{25 \csc^2 5x} = \lim_{x \to 0^+} \frac{\sin^2 5x}{25 \sin^2 x}.
+                        \]</p>
+                        <p class="chalk-effect">Крок 3: Для малих \(x\), \(\sin x \approx x\), \(\sin 5x \approx 5x\), тому:
+                        \[
+                        \frac{\sin^2 5x}{25 \sin^2 x} \approx \frac{(5x)^2}{25 x^2} = \frac{25 x^2}{25 x^2} = 1.
+                        \]</p>
+                        <div class="chalk-line"></div>
+                    </div>
+                    <p class="result chalk-effect">Результат: \(1\).</p>
+                </div>
+
+                
+                <div class="problem-section" id="section-4-2" data-title="4. Границя за правилом Лопіталя">
+                    <div class="problem-content">
+                        <h3 class="problem-subtitle chalk-effect">4.2. \(\displaystyle\lim_{x \to +\infty} \frac{x}{\ln(1 + x)}\)</h3>
+                        <p class="chalk-effect">Розв'язання:</p>
+                        <p class="chalk-effect">Крок 1: Маємо форму \(\infty/\infty\) → застосуємо правило Лопіталя:</p>
+                        <p class="chalk-effect">  
+                        \[
+                        \lim_{x\to\infty}\frac{x}{\ln(1+x)}
+                        = \lim_{x\to\infty}\frac{d(x)/dx}{d(\ln(1+x))/dx}
+                        = \lim_{x\to\infty}\frac{1}{1/(1+x)}
+                        = \lim_{x\to\infty}(1+x)
+                        = +\infty.
+                        \]
+                        </p>
+                        <div class="chalk-line"></div>
+                    </div>
+                    <p class="result chalk-effect">Результат: \(\infty\).</p>
+                </div>
+                
+                <div class="problem-section" id="section-4-3" data-title="4. Границя за правилом Лопіталя">
+                    <div class="problem-content">
+                        <h3 class="problem-subtitle chalk-effect">4.3. \(\displaystyle\lim_{x \to \frac{\pi}{2}} \frac{\cos 4x}{\cos x}\)</h3>
+                        <p class="chalk-effect">Розв'язання:</p>
+                        <p class="chalk-effect">Крок 1: Підстановка дає вигляд \(\frac{1}{0}\) (чисельник \(\cos2\pi=1\), знаменник \(\cos\frac{\pi}{2}=0\)).</p>
+                        <p class="chalk-effect">Крок 2: Зліва \(\cos x\to0^+\) → \(\to +\infty\), справа \(\cos x\to0^-\) → \(\to -\infty\).</p>
+                        <div class="chalk-line"></div>
+                    </div>
+                    <p class="result chalk-effect">Результат: границя не існує (розбігається до \(\pm\infty\)).</p>
+                </div>
+                
+                <div class="problem-section" id="section-5-1" data-title="5. Рівняння дотичних">
+                    <div class="problem-content">
+                        <h3 class="problem-subtitle chalk-effect">5.1. Дотична до \(f(x) = 2\cos2x\) при \(x_0 = \frac{\pi}{4}\)</h3>
+                        <p class="chalk-effect">Розв'язання:</p>
+                        <p class="chalk-effect">  
+                        Використовуємо формулу дотичної  
+                        \(y - f(x_0) = f'(x_0)\,(x - x_0).\)</p>
+                        <p class="chalk-effect">Крок 1: \(f(x_0)=2\cos(\pi/2)=0.\)</p>
+                        <p class="chalk-effect">Крок 2: \(f'(x)=-4\sin2x\), отже \(f'(\pi/4)=-4\).</p>
+                        <p class="chalk-effect">Крок 3: Підставляємо в формулу:  
+                        \(y - 0 = -4\bigl(x - \frac{\pi}{4}\bigr)\;\Longrightarrow\;y=-4x+\pi.\)</p>
+                        <div class="chalk-line"></div>
+                    </div>
+                    <p class="result chalk-effect">Результат: \(y = -4x + \pi\).</p>
+                </div>
+                
+                <div class="problem-section" id="section-5-2" data-title="5. Рівняння дотичних">
+                    <div class="problem-content">
+                        <h3 class="problem-subtitle chalk-effect">5.2. Дотична до \(f(x) = 5\sin x - 4\tan(x^2)\) при \(x_0 = 0\)</h3>
+                        <p class="chalk-effect">Розв'язання:</p>
+                        <p class="chalk-effect">  
+                        За тією ж формулою:  
+                        \(y - f(0) = f'(0)\,(x - 0).\)</p>
+                        <p class="chalk-effect">Крок 1: \(f(0)=0.\)</p>
+                        <p class="chalk-effect">Крок 2:  
+                        \(f'(x)=5\cos x - 8x\sec^2(x^2)\), тому \(f'(0)=5.\)</p>
+                        <p class="chalk-effect">Крок 3:  
+                        \(y = 5x.\)</p>
+                        <div class="chalk-line"></div>
+                    </div>
+                    <p class="result chalk-effect">Результат: \(y = 5x\).</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="scroll-indicator"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sections = document.querySelectorAll('.problem-section');
+            const scrollIndicator = document.querySelector('.scroll-indicator');
+            const scrollContent = document.querySelector('.scrollable-content');
+            const sectionHeader = document.querySelector('.section-header h2');
+            const sectionHeaderEl = document.querySelector('.section-header');
+
+            // Функція для дебонсування
+            function debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            }
+
+            // Функція для підгонки розміру секцій і встановлення padding-top
+            function adjustSectionHeight() {
+                const sectionHeaderHeight = sectionHeaderEl.offsetHeight;
+                const scrollContentHeight = scrollContent.clientHeight;
+                scrollContent.style.paddingTop = `${sectionHeaderHeight}px`;
+                const minSectionHeight = scrollContentHeight - sectionHeaderHeight - 40;
+                sections.forEach(section => {
+                    section.style.minHeight = `${minSectionHeight}px`; // Змінено на min-height
+                });
+            }
+
+            // Виклик після завантаження сторінки
+            adjustSectionHeight();
+            window.addEventListener('resize', adjustSectionHeight);
+
+            // Налаштування IntersectionObserver з дебонсуванням
+            const updateHeader = debounce((title) => {
+                sectionHeader.textContent = title;
+            }, 100);
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        if (!entry.target.classList.contains('animated')) {
+                            entry.target.classList.add('visible', 'animated');
+                        }
+                        updateHeader(entry.target.dataset.title);
+                    }
+                });
+            }, {
+                root: scrollContent,
+                threshold: 0.7,
+                rootMargin: `-${sectionHeaderEl.offsetHeight}px 0px -10px 0px`
+            });
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+
+            // Обробка прокрутки
+            let isScrolling = false;
+            function handleScroll(direction) {
+                if (isScrolling) return;
+                isScrolling = true;
+
+                const scrollTop = scrollContent.scrollTop;
+                const sectionHeaderHeight = sectionHeaderEl.offsetHeight;
+                let currentIndex = 0;
+
+                for (let i = 0; i < sections.length; i++) {
+                    const sectionTop = sections[i].offsetTop - sectionHeaderHeight;
+                    if (scrollTop >= sectionTop - 50) {
+                        currentIndex = i;
+                    } else {
+                        break;
+                    }
+                }
+
+                let nextIndex = direction === 'down' ? currentIndex + 1 : currentIndex - 1;
+                if (nextIndex < 0) nextIndex = 0;
+                if (nextIndex >= sections.length) nextIndex = sections.length - 1;
+
+                scrollContent.scrollTo({
+                    top: sections[nextIndex].offsetTop - sectionHeaderHeight,
+                    behavior: 'smooth'
+                });
+
+                scrollIndicator.classList.toggle('up', nextIndex === sections.length - 1);
+            }
+
+            scrollContent.addEventListener('scrollend', () => {
+                isScrolling = false;
+            });
+
+            scrollContent.addEventListener('wheel', (e) => {
+                if (isScrolling) return;
+                e.preventDefault();
+                const direction = e.deltaY > 0 ? 'down' : 'up';
+                handleScroll(direction);
+            }, { passive: false });
+
+            let touchStartY = 0;
+            scrollContent.addEventListener('touchstart', (e) => {
+                touchStartY = e.touches[0].clientY;
+            });
+            scrollContent.addEventListener('touchmove', (e) => {
+                if (isScrolling) return;
+                e.preventDefault();
+                const touchY = e.touches[0].clientY;
+                const direction = touchY < touchStartY ? 'down' : 'up';
+                handleScroll(direction);
+            }, { passive: false });
+
+            scrollIndicator.addEventListener('click', function() {
+                const scrollTop = scrollContent.scrollTop;
+                const sectionHeaderHeight = sectionHeaderEl.offsetHeight;
+                let currentIndex = 0;
+
+                for (let i = 0; i < sections.length; i++) {
+                    const sectionTop = sections[i].offsetTop - sectionHeaderHeight;
+                    if (scrollTop >= sectionTop - 50) {
+                        currentIndex = i;
+                    } else {
+                        break;
+                    }
+                }
+
+                const isLastSection = currentIndex === sections.length - 1;
+                const nextIndex = isLastSection ? 0 : currentIndex + 1;
+
+                scrollContent.scrollTo({
+                    top: sections[nextIndex].offsetTop - sectionHeaderHeight,
+                    behavior: 'smooth'
+                });
+
+                scrollIndicator.classList.toggle('up', isLastSection);
+            });
+
+            scrollContent.addEventListener('scroll', function() {
+                const scrollTop = scrollContent.scrollTop;
+                const maxScroll = scrollContent.scrollHeight - scrollContent.clientHeight;
+                scrollIndicator.classList.toggle('up', scrollTop > maxScroll - 50);
+            });
+
+            window.MathJax = {
+                tex: {
+                    inlineMath: [['$', '$'], ['\\(', '\\)']]
+                },
+                svg: {
+                    fontCache: 'global'
+                }
+            };
+
+            // Виклик adjustSectionHeight після рендерингу MathJax
+            if (window.MathJax && window.MathJax.startup) {
+                window.MathJax.startup.promise.then(() => {
+                    adjustSectionHeight();
+                });
+            }
+
+            // Ініціалізація першої секції
+            if (sections.length > 0) {
+                sections[0].classList.add('visible', 'animated');
+                sectionHeader.textContent = sections[0].dataset.title;
+            }
+        });
+    </script>
+</body>
+</html>
