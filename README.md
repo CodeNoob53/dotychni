@@ -61,7 +61,7 @@ $$ \lim_{x \to  Kaur \to 0} \frac{\sqrt{x^2 + 16} - 4}{x^3 + x^2} $$
 $$ \lim_{x \to +\infty} \left( \sqrt{9x^2 + x} - 3x \right) $$
 
 Теорема Безу:
-$$ \lim_{x \to 1} \frac{x^3 + x^2 + x - 3}{9x^2 - 8x - 1} $$
+$ \lim_{x \to 1} \frac{x^3 + x^2 + x - 3}{9x^2 - 8x - 1} $
 Правило Лопіталя:
 
 $$ \lim_{x \to 0^+} \frac{\ln \sin x}{\ln \sin 5x} $$
